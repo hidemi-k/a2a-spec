@@ -38,7 +38,7 @@ A2A は **Agent-to-Agent**（エージェント間の自律的な協調・連携
   └── a2a-console           (Planned, MIT)         <-- 共用マルチベンダーUI
 
   [ Integration Layer ]
-  └── a2a-splunk            (Public)                <-- 観測性・テレメトリ連携
+  └── a2a-splunk            (Public, MIT)           <-- 観測性・テレメトリ連携
 ===================================================================
 ```
 

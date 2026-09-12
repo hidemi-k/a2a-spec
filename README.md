@@ -38,7 +38,7 @@ A2A stands for **Agent-to-Agent**, representing autonomous multi-agent coordinat
   └── a2a-console           (Planned, MIT)         <-- Shared multi-vendor UI
 
   [ Integration Layer ]
-  └── a2a-splunk            (Public)                <-- Observability & Telemetry
+  └── a2a-splunk            (Public, MIT)           <-- Observability & Telemetry
 ===================================================================
 ```
 
