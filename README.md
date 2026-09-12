@@ -20,8 +20,8 @@ A2A stands for **Agent-to-Agent**, representing autonomous multi-agent coordinat
                   A2A Ecosystem Architecture
 ===================================================================
 
-  [ Specification Layer ]
-  └── a2a-spec              (Public, Apache-2.0)  <-- THIS REPOSITORY
+  a2a-spec                (Public, Apache-2.0)  <-- THIS REPOSITORY
+                                                     (defines the contracts below)
 
   [ Platform Layer ]
   ├── a2a-containment-core  (MIT, not maintained)    <-- Reference prototype
@@ -271,7 +271,4 @@ to ensure operational resilience and enterprise safety:
 
 ## 📄 License
 
-This specification is released under the Apache 2.0 License — chosen
-over MIT specifically for its explicit patent grant and
-litigation-retaliation clause, given this spec is positioned alongside
-carrier-standards bodies such as TM Forum / Huawei A2A-T.
+This specification is released under the Apache 2.0 License.

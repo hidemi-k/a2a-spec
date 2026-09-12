@@ -20,8 +20,8 @@ A2A は **Agent-to-Agent**（エージェント間の自律的な協調・連携
                   A2A Ecosystem Architecture
 ===================================================================
 
-  [ Specification Layer ]
-  └── a2a-spec              (Public, Apache-2.0)  <-- 本リポジトリ
+  a2a-spec                (Public, Apache-2.0)  <-- 本リポジトリ
+                                                     （以下の契約を定義する）
 
   [ Platform Layer ]
   ├── a2a-containment-core  (MIT, メンテなし)        <-- 参照実装（凍結）
@@ -239,6 +239,4 @@ A2A仕様は、運用面の堅牢性とエンタープライズ品質の安全�
 
 ## 📄 ライセンス
 
-本仕様は Apache 2.0 License の下で公開される——MITではなくこちらを選んだのは、
-明示的な特許許諾および訴訟提起時の失効条項があるためであり、本仕様がTM Forum /
-Huawei A2A-Tのようなキャリア標準団体と並ぶ位置づけであることを踏まえた選択である。
+本仕様は Apache 2.0 License の下で公開される。
