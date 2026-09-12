@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/hidemi-k/a2a-spec/blob/main/schemas/governance.json",
+  "title": "A2A Governance Evaluation",
+  "description": "Payload format for the policy-decision-point contract exchanged with a2a-governance. a2a-governance does not execute changes itself; it answers 'is this action permitted, and why?' and records every decision to an append-only audit trail. NOTE: the specific policy rule catalog (which actions map to which effect) is intentionally not part of this public contract and is defined privately per deployment.",
+  "type": "object",
+  "required": ["trace_id", "action", "requesting_agent"],
+  "properties": {
+    "trace_id": {
+      "type": "string",
+      "description": "Unique identifier correlating this evaluation across the init/observe/act/report lifecycle. Auto-generated (32-char hex, OpenTelemetry-compatible) by the calling client if omitted -- never sent empty, so audit entries stay correlatable."
+    },
+    "action": {
+      "type": "string",
+      "description": "Dot-separated action identifier evaluated against the (private) policy catalog, e.g. 'netconf.edit_config.vlan' or 'eapi.show.interfaces'."
+    },
+    "requesting_agent": {
+      "type": "string",
+      "description": "Name of the agent requesting evaluation (e.g. junos_netconf_write_a2a_server)."
+    },
+    "context": {
+      "type": "object",
+      "description": "Optional supplementary detail about the action being evaluated, e.g. a containment.json or vendor-core.json payload, for audit purposes."
+    },
+    "effect": {
+      "type": ["string", "null"],
+      "enum": ["PERMIT", "REVIEW", "DENY", null],
+      "description": "Null until evaluated. PERMIT: execution proceeds silently. REVIEW: non-blocking -- execution proceeds (a human is expected to have already approved the change via the calling agent's own diff/history UI), but the reason is written to the audit trail and surfaced to the caller. DENY: the only blocking effect -- execution must stop regardless of any human intent expressed elsewhere. Governance intentionally does not run a second, separate approval queue for REVIEW."
+    },
+    "reason": {
+      "type": ["string", "null"],
+      "description": "Human-readable explanation for the effect, drawn from the matched policy rule (or the safe-default heuristic when no rule matches)."
+    },
+    "audit_event_id": {
+      "type": "string",
+      "description": "Unique identifier of the resulting entry in the append-only audit trail."
+    }
+  },
+  "additionalProperties": false
+}

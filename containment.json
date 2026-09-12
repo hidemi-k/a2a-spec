@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/hidemi-k/a2a-spec/blob/main/schemas/containment.json",
+  "title": "A2A Containment Action",
+  "description": "Risk-tiered containment request/response envelope, issued during the `act` phase in response to a detected security event. A three-tier risk model drives escalation: Low is auto-contained end-to-end; Medium/High auto-contain immediately at the access layer (ZTNA) but require human approval before pushing config changes to a Vendor Core (e.g. an ACL push via a2a-ceos-core / a2a-junos-core).",
+  "type": "object",
+  "required": ["trace_id", "risk", "target"],
+  "properties": {
+    "trace_id": {
+      "type": "string",
+      "description": "Unique identifier correlating this action across the init/observe/act/report lifecycle, and used to reference a pending approval (e.g. for a later deploy/rollback call)."
+    },
+    "risk": {
+      "type": "string",
+      "enum": ["Low", "Medium", "High"],
+      "description": "Risk tier assigned to the detected event. Low: access-layer containment only, fully automatic. Medium: access-layer containment automatic, Vendor Core config push requires approval. High: access-layer containment automatic, Vendor Core config push requires approval, and an account/global lock may additionally be proposed."
+    },
+    "target": {
+      "type": "object",
+      "required": ["src_ip"],
+      "properties": {
+        "src_ip": { "type": "string", "description": "Source IP address associated with the detected event." },
+        "username": { "type": "string", "description": "Associated account identifier, if applicable. Lockout tracking is keyed on username, not src_ip, so that other users sharing an IP are unaffected." }
+      }
+    },
+    "event_summary": {
+      "type": "object",
+      "description": "Opaque context from the detection source (e.g. process/binary name, event count) used both for risk explanation and for audit."
+    },
+    "deploy": {
+      "type": "boolean",
+      "description": "Whether to also push the resulting configuration change to a Vendor Core (e.g. ACL isolation), versus access-layer containment only."
+    },
+    "reason": {
+      "type": ["string", "null"],
+      "description": "Human-readable justification for the escalation, typically generated from event_summary. Falls back to a templated explanation if generation fails."
+    },
+    "results": {
+      "type": "object",
+      "description": "Per-layer containment outcomes for this action, e.g. { \"ztna\": {...}, \"vendor_core\": {...} }. Populated according to the risk tier's response plan.",
+      "properties": {
+        "ztna": { "type": "object", "description": "Result of the access-layer containment step (e.g. revoke, drop_block, lock)." },
+        "vendor_core": { "type": ["object", "null"], "description": "Result of the Vendor Core config push (e.g. ACL isolation), if deploy was approved and executed." }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "contained", "approval_required", "already_locked", "locked",
+        "system_locked", "rolled_back", "watching", "error"
+      ],
+      "description": "Current state of this containment action. `approval_required` corresponds to a pending Vendor Core config push awaiting human approval; `rolled_back` indicates a previously deployed containment action was reverted."
+    },
+    "audit_log": {
+      "type": ["object", "string"],
+      "description": "Reference to (or inline copy of) the corresponding append-only audit trail entry."
+    }
+  },
+  "additionalProperties": false
+}

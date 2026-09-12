@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/hidemi-k/a2a-spec/blob/main/schemas/vendor-core.json",
+  "title": "A2A Vendor Core Execution Contract",
+  "description": "Normalized request/response envelope for Vendor Core adapters (Arista, Cisco, Juniper, ...). This schema formalizes the response envelope already used in practice (see response_schema.py in a2a-containment-core, MIT), written as a shared convention so that the common multi-vendor UI (a2a-console) can read every vendor the same way.",
+  "type": "object",
+  "required": ["trace_id", "route", "vendor_key", "status"],
+  "properties": {
+    "trace_id": {
+      "type": "string",
+      "description": "Unique identifier correlating this contract instance across the init/observe/act/report lifecycle."
+    },
+    "query": {
+      "type": "string",
+      "description": "Natural-language instruction as entered by the operator. Routing to read/write/diagnose is classification-driven (NL intent classification), not an explicit client-supplied operation code."
+    },
+    "route": {
+      "type": "string",
+      "enum": ["read", "write", "diagnose"],
+      "description": "The normalized operation category this query was classified into, independent of vendor-specific mechanism (NETCONF, eAPI, PyEZ, etc.)."
+    },
+    "vendor_key": {
+      "type": "string",
+      "description": "Vendor/NOS identifier (e.g. arista_ceos, juniper_ptx, cisco_nxos). Selects the Vendor Core adapter and its NOS_PROFILES entry in the shared UI."
+    },
+    "routed_to": {
+      "type": "string",
+      "description": "URL of the downstream agent this request was dispatched to (e.g. the vendor's NETCONF write agent)."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["success", "dry_run", "failure", "error", "blocked", "skipped", "no_change"],
+      "description": "Normalized outcome status, shared across all Vendor Core Hubs regardless of vendor. `dry_run` and `no_change` are treated as OK outcomes; `failure`/`error`/`blocked` are not."
+    },
+    "summary": {
+      "type": "string",
+      "description": "Short, human-readable one-line summary of the result, shown directly in the operator UI."
+    },
+    "result": {
+      "type": "object",
+      "description": "Vendor/route-specific inner payload (e.g. generated NETCONF XML, eAPI commands, diff output). Intentionally left open-shaped per vendor and route; the outer envelope is what is normalized, not the inner detail."
+    },
+    "human_confirmation_required": {
+      "type": "boolean",
+      "description": "Reserved for a future diagnose -> approval -> execute flow. True signals the UI should show an approval prompt before proceeding."
+    },
+    "recommended_action": {
+      "type": ["string", "null"],
+      "description": "Reserved for a future diagnose -> approval -> execute flow. A suggested corrective command, when applicable."
+    }
+  },
+  "additionalProperties": false
+}

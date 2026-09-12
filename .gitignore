@@ -1,0 +1,21 @@
+# 作業用ディレクトリ
+backup/
+work/
+
+# Python キャッシュ
+__pycache__/
+.ipynb_checkpoints/
+
+# ログ・一時ファイル
+*.log
+*.jsonl
+*.zip
+*.pdf
+*.swp
+
+# Jupyter
+*.ipynb
+
+# コミットしない
+config.ini
+.env
