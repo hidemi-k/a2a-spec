@@ -65,36 +65,45 @@ A2A は **Agent-to-Agent**（エージェント間の自律的な協調・連携
 > 統一することを目指す。マルチエージェントの意図を、安全かつ監査可能で、可逆的なインフラの状態変更へと
 > 変換する仕組みを提供する。
 
-**上位オーケストレーション層との位置づけ**
+**TM Forum の Autonomous Networksアーキテクチャとの位置づけ**
 
-TM Forum IG1453 / IG1453A や Huawei の A2A-T（Agent-to-Agent for Telecom）といったグローバルな通信業界
-フレームワークは、ベンダー横断でのエージェント間メッセージング、エージェントの発見・レジストリ、
-サービスレベルのワークフローオーケストレーションを標準化するものである。
+TM Forum の AN アーキテクチャ（IG1251C、「AN Level 4 Target Architecture」）は、
+Business Operations → Service Operations → Network Operations → Network Element (NE)
+という階層構造を定義しており、各層のエージェントは A2A-T（IG1453で定義）や
+インテントベースのAPIといった「エージェントインターフェース」を介して通信する。
+IG1251Cはまた、各層に「Agent/Copilot Governance」という基盤機能（エージェントの
+デプロイ・登録・検証・稼働監視）を定めており、Network Element層には
+「Control Agents」という分類がある。
 
-`a2a-spec` は、これとは異なる、補完的なレイヤーで動作する。上位のマルチエージェントの意図を、決定論的な
-物理ネットワークの状態変更（ノードの隔離、ACLの適用、マルチベンダーでの状態ロールバック）へと変換するために
-必要な **実行プロファイルと安全性契約** を定義する。
+`a2a-spec` は、A2A-Tの上位・下位に位置する競合オーケストレーション層ではない。
+IG1251C自身の記述に基づくと、`a2a-spec`は**Network Operations層 / Network Element層
+向けの実行・ガバナンスプロファイル**に近い: `a2a-governance`の役割（ポリシー評価・
+監査証跡・フルライフサイクルの監督）は、IG1251CがNetwork層に求める
+「Agent/Copilot Governance」機能と一致し、Vendor Coreアダプタ（`a2a-junos-core`・
+`a2a-ceos-core`等）は、IG1251CがNetwork Element層で定める「Control Agents」に
+対応する。A2A-T自体は、IG1251Cが層間でタスク内容を運ぶための「エージェント
+インターフェース」の一つとして挙げられているものであり、`a2a-spec`はそれを
+置き換えたり競合したりするものではない。
 
 ```text
-   [ High-Level Orchestration Layer ]
-   TM Forum IG1453 / A2A-T（エージェント発見・レジストリ・ワークフローオーケストレーション）
+   [ TM Forum AN Architecture — IG1251C ]
+   Business Operations → Service Operations → Network Operations → Network Element (NE)
+   （エージェント間通信は A2A-T / IG1453 等のエージェントインターフェース経由）
+   各層が独自の「Agent/Copilot Governance」機能を定めている
                     │
-                    ▼  （上位のワークフロー要求）
+                    ▼  （Network Operations / Network Element 層）
 ┌───────────────────────────────────────────────────────────────┐
 │  A2A Protocol Specification  (a2a-spec)                        │
-│  - 決定論的な実行とマルチベンダー抽象化                          │
-│  - ガバナンスによるゲートキーピングと安全反射ループ                │
+│  - a2a-governance  ≈ IG1251Cの「Agent/Copilot Governance」       │
+│    （デプロイ・登録・検証・稼働監視）                              │
+│  - Vendor Cores    ≈ IG1251Cの「Control Agents」（NE層）         │
 └───────────────────────────────────────────────────────────────┘
-                    │
-                    ▼  （正規化された実行契約）
-   [ Physical Execution Layer ]
-   Arista / Juniper / Cisco 各ベンダーコアドライバー
 ```
 
-要するに: A2A-Tは「エージェント同士がどう会話するか」を標準化する。`a2a-spec`は「決定を実インフラへの
-安全な実行へとどう変換するか」を標準化する。このレイヤー分けにより両者は競合する必要がない——
-ただしこれはA2A-Tの公表内容に基づくアーキテクチャ上の分析であり、実際に組み合わせて検証した
-結果ではない。両者間の互換性検証はこれまで行っていない。
+この整理は、TM Forumが公開しているIG1251C（v2.0.0）およびIG1453（v2.1.0）を
+実際に読んだ上での、`a2a-spec`の各コンポーネントとIG1251Cが定める機能ブロックとの
+対応関係の分析である。A2A-Tの何らかの実装ソフトウェアと実際に組み合わせて
+検証した結果ではない。
 
 ---
 
@@ -224,14 +233,17 @@ A2A仕様は、運用面の堅牢性とエンタープライズ品質の安全�
 
 ## 📚 参考文献・標準規格との関係
 
-- **TM Forum IG1453 / A2A-T** — `a2a-spec`は、TM Forumの公表内容に基づくと、TM Forumの
-  Autonomous Networksフレームワーク（上位オーケストレーション）とは異なるレイヤー
-  （実行・安全性）を占める。これはアーキテクチャ上の分析であり、A2A-Tの実ソフトウェアとの
-  検証済み連携ではない。
-- **Google の Agent2Agent (A2A) Protocol** — 本エコシステムの実装（`a2a-governance`等）は、
+- **TM Forum IG1251C / IG1453（A2A-T）** — `a2a-spec`の各コンポーネントは、TM Forumが
+  公開しているANアーキテクチャの具体的な機能ブロックに対応する。詳細は上記
+  「TM Forum の Autonomous Networksアーキテクチャとの位置づけ」を参照。これは
+  IG1251C（v2.0.0）・IG1453（v2.1.0）を実際に読んだ上での文書上の分析であり、
+  A2A-Tの何らかの実装ソフトウェアとの検証済み連携ではない。
+- **Agent2Agent (A2A) Protocol** — 本エコシステムの実装（`a2a-governance`等）は、
   概念的にインスパイアされているだけでなく、公式の
   [a2aproject/A2A](https://github.com/a2aproject/A2A) SDKのメッセージング層の上に
-  直接構築されている。
+  直接構築されている。A2A本体はGoogleが起点となって発表したものだが、IG1453自身の
+  記述によれば、現在はLinux Foundationの下で管理されており、IG1453はそのコア
+  プロトコル自体を変更せず拡張する形を取っている。
 - **Agentic AI Design Patterns** — 独自かつ未検証のアーキテクチャではなく、確立された
   マルチエージェント設計パターン（オーケストレーション、評価、反省ループ）の上に構築されている。
 

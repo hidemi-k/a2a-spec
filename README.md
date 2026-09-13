@@ -72,40 +72,47 @@ A2A stands for **Agent-to-Agent**, representing autonomous multi-agent coordinat
 > which multi-agent intent is converted into safe, auditable, and reversible
 > infrastructure state changes.
 
-**Positioning Relative to High-Level Orchestrators**
+**Positioning Relative to TM Forum's Autonomous Networks Architecture**
 
-Global telecom frameworks — such as TM Forum IG1453 / IG1453A and Huawei's
-A2A-T (Agent-to-Agent for Telecom) — standardize high-level inter-agent
-messaging, agent discovery/registry, and service-level workflow
-orchestration across vendors.
+TM Forum's AN architecture (IG1251C, "AN Level 4 Target Architecture")
+defines a layered structure — Business Operations, Service Operations,
+Network Operations, and Network Element (NE) — in which agents
+communicate via agent interfaces such as A2A-T (defined in IG1453) and
+intent-based APIs. IG1251C also specifies an "Agent/Copilot Governance"
+foundational capability at each layer, covering agent deployment,
+registration, verification, and monitoring, and a Network Element layer
+populated by "Control Agents."
 
-`a2a-spec` operates at a different, complementary layer: it defines the
-**execution profile and safety contract** required to translate high-level
-multi-agent intent into deterministic physical network state changes
-(node containment, ACL enforcement, multi-vendor state rollback).
+`a2a-spec` is not a competing orchestration layer sitting above or below
+A2A-T. Based on IG1251C's own descriptions, it is closer to an execution
+and governance **profile for the Network Operations / Network Element
+layers**: `a2a-governance`'s role (policy evaluation, audit trail,
+full-lifecycle oversight) matches the "Agent/Copilot Governance"
+capability IG1251C calls for at the Network layer, and Vendor Core
+adapters (e.g. `a2a-junos-core`, `a2a-ceos-core`) correspond to the
+"Control Agents" IG1251C describes at the Network Element layer. A2A-T
+itself is one of the agent interfaces IG1251C names for carrying task
+content between layers — `a2a-spec` does not replace or compete with it.
 
 ```text
-   [ High-Level Orchestration Layer ]
-   TM Forum IG1453 / A2A-T (Agent Discovery, Registry, Workflow Orchestration)
+   [ TM Forum AN Architecture — IG1251C ]
+   Business Operations → Service Operations → Network Operations → Network Element (NE)
+   (agents communicate via agent interfaces, incl. A2A-T / IG1453)
+   Each layer specifies its own "Agent/Copilot Governance" capability
                     │
-                    ▼  (High-level workflow intent)
+                    ▼  (Network Operations / Network Element layers)
 ┌───────────────────────────────────────────────────────────────┐
 │  A2A Protocol Specification  (a2a-spec)                        │
-│  - Deterministic execution & multi-vendor abstraction          │
-│  - Governance gatekeeping & safety-reflective loops             │
+│  - a2a-governance  ≈ IG1251C's "Agent/Copilot Governance"       │
+│    (deployment, registration, verification, monitoring)         │
+│  - Vendor Cores    ≈ IG1251C's "Control Agents" (NE layer)      │
 └───────────────────────────────────────────────────────────────┘
-                    │
-                    ▼  (Normalized execution contracts)
-   [ Physical Execution Layer ]
-   Arista / Juniper / Cisco vendor core drivers
 ```
 
-In short: A2A-T standardizes **how agents talk**. `a2a-spec` standardizes
-**how a decision is safely turned into an action** on real infrastructure.
-By this layering, the two need not compete — though this is an
-architectural analysis based on A2A-T's public announcement, not a
-tested integration; no compatibility testing between the two has been
-performed to date.
+This reading is based on TM Forum's published IG1251C (v2.0.0) and
+IG1453 (v2.1.0) documents — it is a documentary analysis of how
+`a2a-spec`'s components map onto named IG1251C function blocks, not a
+tested software integration with any A2A-T implementation.
 
 ---
 
@@ -254,15 +261,18 @@ to ensure operational resilience and enterprise safety:
 
 ## 📚 References & Standards Alignment
 
-- **TM Forum IG1453 / A2A-T** — `a2a-spec` occupies a different layer than
-  TM Forum's Autonomous Network frameworks (execution/safety vs.
-  high-level orchestration), based on their public specification/
-  announcement. This is an architectural analysis, not a tested
-  integration with A2A-T's actual software.
-- **Google's Agent2Agent (A2A) Protocol** — implementations in this
-  ecosystem (e.g. `a2a-governance`) are built directly on the official
+- **TM Forum IG1251C / IG1453 (A2A-T)** — `a2a-spec`'s components map onto
+  named function blocks in TM Forum's published AN architecture: see
+  "Positioning Relative to TM Forum's Autonomous Networks Architecture"
+  above. This is a documentary analysis of IG1251C v2.0.0 and IG1453
+  v2.1.0, not a tested integration with any A2A-T implementation.
+- **The Agent2Agent (A2A) Protocol** — implementations in this ecosystem
+  (e.g. `a2a-governance`) are built directly on the official
   [a2aproject/A2A](https://github.com/a2aproject/A2A) SDK's messaging
-  layer, not just conceptually inspired by it.
+  layer, not just conceptually inspired by it. The base A2A protocol
+  originated at Google and, per IG1453's own description, is now
+  maintained under the Linux Foundation; IG1453 explicitly extends it
+  without modifying the core protocol.
 - **Agentic AI Design Patterns** — Built on established multi-agent
   design patterns (orchestration, evaluation, reflection) rather than
   a bespoke, unvalidated architecture.
