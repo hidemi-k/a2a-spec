@@ -4,7 +4,7 @@
   "title": "A2A Governance Evaluation",
   "description": "Payload format for the policy-decision-point contract exchanged with a2a-governance. a2a-governance does not execute changes itself; it answers 'is this action permitted, and why?' and records every decision to an append-only audit trail. NOTE: the specific policy rule catalog (which actions map to which effect) is intentionally not part of this public contract and is defined privately per deployment.",
   "type": "object",
-  "required": ["trace_id", "action", "requesting_agent"],
+  "required": ["trace_id", "action", "agent_name"],
   "properties": {
     "trace_id": {
       "type": "string",
@@ -14,11 +14,11 @@
       "type": "string",
       "description": "Dot-separated action identifier evaluated against the (private) policy catalog, e.g. 'netconf.edit_config.vlan' or 'eapi.show.interfaces'."
     },
-    "requesting_agent": {
+    "agent_name": {
       "type": "string",
       "description": "Name of the agent requesting evaluation (e.g. junos_netconf_write_a2a_server)."
     },
-    "context": {
+    "action_detail": {
       "type": "object",
       "description": "Optional supplementary detail about the action being evaluated, e.g. a containment.json or vendor-core.json payload, for audit purposes."
     },

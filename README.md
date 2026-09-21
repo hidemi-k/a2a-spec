@@ -38,7 +38,11 @@ A2A stands for **Agent-to-Agent**, representing autonomous multi-agent coordinat
   └── a2a-console           (Planned, MIT)         <-- Shared multi-vendor UI
 
   [ Integration Layer ]
-  └── a2a-splunk            (Public, MIT)           <-- Observability & Telemetry
+  ├── a2a-splunk            (Public, MIT)           <-- Observability & Telemetry
+  └── a2a-interconnect      (Public, MIT)           <-- Multi-cloud interconnect
+                                                         negotiation (OpenAPI 3.0
+                                                         Interconnect / Connection
+                                                         Coordinator API)
 ===================================================================
 ```
 
@@ -215,6 +219,11 @@ explicitly rather than treating them as unexpected exceptions:
 > for that namespace as "transition to awaiting human approval" instead
 > of "proceed." This is a caller-side convention on top of the
 > `governance.json` contract, not a change to the contract itself.
+> `a2a-interconnect` is a working reference implementation of this
+> pattern: its autonomous negotiation/deploy flow evaluates deployments
+> under `interconnect.autonomous_deploy.*`, and a `REVIEW` effect on that
+> namespace transitions the connection to an `AWAITING_HUMAN_APPROVAL`
+> state rather than proceeding.
 
 ---
 

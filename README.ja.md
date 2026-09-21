@@ -38,7 +38,11 @@ A2A は **Agent-to-Agent**（エージェント間の自律的な協調・連携
   └── a2a-console           (Planned, MIT)         <-- 共用マルチベンダーUI
 
   [ Integration Layer ]
-  └── a2a-splunk            (Public, MIT)           <-- 観測性・テレメトリ連携
+  ├── a2a-splunk            (Public, MIT)           <-- 観測性・テレメトリ連携
+  └── a2a-interconnect      (Public, MIT)           <-- マルチクラウド相互接続
+                                                         ネゴシエーション（OpenAPI 3.0
+                                                         Interconnect / Connection
+                                                         Coordinator API）
 ===================================================================
 ```
 
@@ -192,6 +196,10 @@ A2A準拠の実装は、以下の失敗モードを予期せぬ例外として�
 > `vendor.write.*`ではなく`autonomous_deploy.*`のような専用のアクション名前空間で評価し、
 > その名前空間に対する`REVIEW`を「続行」ではなく「人間承認待ちへの遷移」として扱うことである。
 > これは`governance.json`の契約そのものへの変更ではなく、呼び出し元側の運用規約である。
+> `a2a-interconnect`は、このパターンの実際に動く参照実装である。その自律的な
+> ネゴシエーション／デプロイフローは、`interconnect.autonomous_deploy.*`という
+> 名前空間でデプロイを評価し、この名前空間に対する`REVIEW`効果は、続行するのではなく
+> `AWAITING_HUMAN_APPROVAL`状態への遷移として扱われる。
 
 ---
 

@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://github.com/hidemi-k/a2a-spec/blob/main/schemas/vendor-core.json",
   "title": "A2A Vendor Core Execution Contract",
-  "description": "Normalized request/response envelope for Vendor Core adapters (Arista, Cisco, Juniper, ...). This schema formalizes the response envelope already used in practice (see response_schema.py in a2a-containment-core, MIT), written as a shared convention so that the common multi-vendor UI (a2a-console) can read every vendor the same way.",
+  "description": "Normalized request/response envelope for Vendor Core adapters (Arista, Cisco, Juniper, ...). This schema formalizes the response envelope already used in practice (see response_schema.py in a2a-containment-core, MIT), written as a shared convention so that the common multi-vendor UI (a2a-console) can read every vendor the same way. Two request styles are covered: the original NL-classified `/execute` path (`query` + intent-classified `route`), and the deterministic `/deploy_structured` path (`task_type` + `params`, no LLM involved) used by e.g. `a2a-interconnect`. A Vendor Core may implement either or both; the response envelope below is shared by both.",
   "type": "object",
   "required": ["trace_id", "route", "vendor_key", "status"],
   "properties": {
@@ -12,12 +12,20 @@
     },
     "query": {
       "type": "string",
-      "description": "Natural-language instruction as entered by the operator. Routing to read/write/diagnose is classification-driven (NL intent classification), not an explicit client-supplied operation code."
+      "description": "Natural-language instruction as entered by the operator, on the `/execute` path. Routing to read/write/diagnose is classification-driven (NL intent classification), not an explicit client-supplied operation code. Not present on the deterministic `/deploy_structured` path; use `task_type` instead."
+    },
+    "task_type": {
+      "type": "string",
+      "description": "Explicit, client-supplied task identifier for the deterministic `/deploy_structured` path (e.g. `interface_mtu`, `interface_ipv4`, `bgp_neighbor`, `create_vlan`). Selects a fixed, LLM-free configuration template on the Vendor Core side, as an alternative to NL-intent-classified `route`/`query`. Mutually exclusive with `query` in practice."
+    },
+    "params": {
+      "type": "object",
+      "description": "Structured, task_type-specific parameters for the deterministic `/deploy_structured` path (e.g. `{\"interface\": \"et-0/0/2\", \"mtu\": 9000}`). Present only alongside `task_type`."
     },
     "route": {
       "type": "string",
       "enum": ["read", "write", "diagnose"],
-      "description": "The normalized operation category this query was classified into, independent of vendor-specific mechanism (NETCONF, eAPI, PyEZ, etc.)."
+      "description": "The normalized operation category, independent of vendor-specific mechanism (NETCONF, eAPI, PyEZ, etc.). On the `/execute` path this is derived from NL intent classification of `query`; on the `/deploy_structured` path it is a fixed property of `task_type` (deployment tasks are `write`)."
     },
     "vendor_key": {
       "type": "string",
@@ -29,8 +37,8 @@
     },
     "status": {
       "type": "string",
-      "enum": ["success", "dry_run", "failure", "error", "blocked", "skipped", "no_change"],
-      "description": "Normalized outcome status, shared across all Vendor Core Hubs regardless of vendor. `dry_run` and `no_change` are treated as OK outcomes; `failure`/`error`/`blocked` are not."
+      "enum": ["success", "dry_run", "failure", "error", "blocked", "skipped", "no_changes"],
+      "description": "Normalized outcome status, shared across all Vendor Core Hubs regardless of vendor. `dry_run` and `no_changes` are treated as OK outcomes (`no_changes` covers the idempotency case: the desired state was already present, so nothing was applied); `failure`/`error`/`blocked` are not."
     },
     "summary": {
       "type": "string",
@@ -38,7 +46,11 @@
     },
     "result": {
       "type": "object",
-      "description": "Vendor/route-specific inner payload (e.g. generated NETCONF XML, eAPI commands, diff output). Intentionally left open-shaped per vendor and route; the outer envelope is what is normalized, not the inner detail."
+      "description": "Vendor/route-specific inner payload on the `/execute` path (e.g. generated NETCONF XML, eAPI commands, diff output). Intentionally left open-shaped per vendor and route; the outer envelope is what is normalized, not the inner detail."
+    },
+    "deploy_result": {
+      "type": "object",
+      "description": "Vendor/task_type-specific inner payload on the `/deploy_structured` path. Plays the same role as `result` does on the `/execute` path (open-shaped per vendor and task_type); the two paths use different key names for this inner payload in current implementations."
     },
     "human_confirmation_required": {
       "type": "boolean",
